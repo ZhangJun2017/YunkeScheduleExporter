@@ -3,6 +3,7 @@ import com.google.gson.JsonObject;
 import okhttp3.FormBody;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
@@ -48,5 +49,28 @@ public class Main {
             System.out.println("====== Page " + page + " ======");
             page++;
         }
+        System.out.println();
+        System.out.println("Requesting class info in your account...");
+        ArrayList<HashMap<String, String>> classroomInfoCollection = new ArrayList<>();
+        for (int i = 0; i < classIdCollection.size(); i++) {
+            JsonObject nowOperating = Tools.parseJson(Tools.post(String.format(yunkeGetClassInfoUrl, token), new FormBody.Builder().add("lessonId", classIdCollection.get(i)).build())).getAsJsonObject("data");
+            JsonArray classroomInfoList = nowOperating.getAsJsonArray("classroomInfoList");
+            JsonArray videoList = nowOperating.getAsJsonArray("videoList");
+            for (int j = 0; j < classroomInfoList.size(); j++) {
+                JsonObject nowOperatingClassroom = classroomInfoList.get(j).getAsJsonObject();
+                HashMap<String, String> classroomInfo = new HashMap<>();
+                classroomInfo.put("classroomName", nowOperatingClassroom.get("classroomName").getAsString());
+                classroomInfo.put("classroomId", nowOperatingClassroom.get("classroomId").getAsString());
+                classroomInfo.put("className", nowOperating.get("lessonName").getAsString());
+                classroomInfo.put("classId", nowOperating.get("lessonId").getAsString());
+                classroomInfo.put("classTypeName", nowOperating.get("lessonTypeName").getAsString());
+                classroomInfo.put("classTypeId", nowOperating.get("lessonTypeId").getAsString());
+                classroomInfo.put("classroomStartTime", nowOperatingClassroom.get("factStartTime").getAsString());
+                classroomInfo.put("classroomEndTime", nowOperatingClassroom.get("factEndTime").getAsString());
+
+            }
+
+        }
+
     }
 }
