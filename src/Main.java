@@ -77,6 +77,8 @@ public class Main {
                     for (int k = 0; k < videoList.size(); k++) {
                         if (videoList.get(k).getAsJsonObject().get("classroomId").getAsString().equals(nowOperatingClassroom.get("classroomId").getAsString())) {
                             classroomInfo.put("videoUrl", videoList.get(k).getAsJsonObject().get("videoPath").getAsString());
+                            k = 999;
+                            //stupid way to kill k's for()
                         } else {
                             classroomInfo.put("videoUrl", "");
                         }
