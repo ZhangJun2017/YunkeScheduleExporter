@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         System.out.println("8_Orange_Yunke Class Schedule Exporter Running!");
         System.out.println("===============================================");
 
@@ -53,10 +53,14 @@ public class Main {
         System.out.println("Requesting class info in your account...");
         ArrayList<HashMap<String, String>> classroomInfoCollection = new ArrayList<>();
         for (int i = 0; i < classIdCollection.size(); i++) {
+            Thread.sleep(233);
+            //force sleep to prevent us from being banned by the server
+            System.out.println((i + 1) + "/" + classIdCollection.size());
             JsonObject nowOperating = Tools.parseJson(Tools.post(String.format(yunkeGetClassInfoUrl, token), new FormBody.Builder().add("lessonId", classIdCollection.get(i)).build())).getAsJsonObject("data");
             JsonArray classroomInfoList = nowOperating.getAsJsonArray("classroomInfoList");
             JsonArray videoList = nowOperating.getAsJsonArray("videoList");
             for (int j = 0; j < classroomInfoList.size(); j++) {
+                //System.out.println(" |" + (j + 1) + "/" + classroomInfoList.size());
                 JsonObject nowOperatingClassroom = classroomInfoList.get(j).getAsJsonObject();
                 HashMap<String, String> classroomInfo = new HashMap<>();
                 classroomInfo.put("classroomName", nowOperatingClassroom.get("classroomName").getAsString());
@@ -67,10 +71,27 @@ public class Main {
                 classroomInfo.put("classTypeId", nowOperating.get("lessonTypeId").getAsString());
                 classroomInfo.put("classroomStartTime", nowOperatingClassroom.get("factStartTime").getAsString());
                 classroomInfo.put("classroomEndTime", nowOperatingClassroom.get("factEndTime").getAsString());
-
+                if (videoList.size() == 0) {
+                    classroomInfo.put("videoUrl", "");
+                } else {
+                    for (int k = 0; k < videoList.size(); k++) {
+                        if (videoList.get(k).getAsJsonObject().get("classroomId").getAsString().equals(nowOperatingClassroom.get("classroomId").getAsString())) {
+                            classroomInfo.put("videoUrl", videoList.get(k).getAsJsonObject().get("videoPath").getAsString());
+                        } else {
+                            classroomInfo.put("videoUrl", "");
+                        }
+                    }
+                }
+                classroomInfoCollection.add(classroomInfo);
             }
-
         }
-
+        System.out.println("Done,outputting...");
+        for (int i = 0; i < classroomInfoCollection.size(); i++) {
+            HashMap nowOperating = classroomInfoCollection.get(i);
+            String outputFormat = "%s,%s,%s,%s,%s";
+            //String outputFormat = "开始时间,学科,课程名,课时名,视频直链";
+            System.out.println(String.format(outputFormat, nowOperating.get("classroomStartTime"), nowOperating.get("classTypeName"), nowOperating.get("className"), nowOperating.get("classroomName"), nowOperating.get("videoUrl")));
+        }
+        System.out.println("Done,exiting...");
     }
 }
